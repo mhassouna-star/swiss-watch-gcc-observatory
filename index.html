@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#393939">
+<title>Swiss Watch · GCC Observatory — HS 9101–9102, 2014–2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<style>
+:root{
+  --chrome:#332F2C;         /* top bar + rail, deepest tone */
+  --canvas:#403C38;         /* page canvas, warm charcoal (kept lighter than #393939) */
+  --card:#4A4540;           /* chart cards */
+  --card-2:#524C46;         /* hover / raised */
+  --ink:#F2ECE3;            /* warm ivory */
+  --muted:#B9AFA3;
+  --faint:#8E857A;
+  --bronze:#C48B58;         /* Seddiqi bronze accent */
+  --bronze-deep:#9E6B3C;
+  --bronze-soft:#D9BE93;
+  --line:rgba(242,236,227,.10);
+  --good:#8FA98B; --bad:#C08079;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(0,0,0,.25), 0 6px 18px rgba(0,0,0,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Outfit',system-ui,sans-serif;
+  background:var(--canvas);
+  color:var(--ink);
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--bronze-deep);color:var(--ink)}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(180deg,var(--chrome),#38342F);
+  border-bottom:1px solid var(--line);
+  padding:0 22px;
+  display:flex;align-items:center;gap:26px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:12px;padding:14px 0 12px}
+.brand h1{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:23px;letter-spacing:.02em;white-space:nowrap;
+}
+.brand h1 em{font-style:normal;color:var(--bronze)}
+.brand .tag{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--faint);
+  border:1px solid var(--line);border-radius:20px;padding:3px 10px;white-space:nowrap;
+}
+.tabs{display:flex;gap:2px;margin-left:auto}
+.tab{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-family:'Outfit';font-size:13.5px;font-weight:500;letter-spacing:.02em;
+  padding:18px 15px 15px;border-bottom:2px solid transparent;transition:color .15s;
+}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--bronze-soft);border-bottom-color:var(--bronze)}
+.tab:focus-visible{outline:2px solid var(--bronze);outline-offset:-2px;border-radius:6px}
+
+/* bezel tick strip — signature element under the top bar */
+.bezel{height:7px;background:
+  repeating-linear-gradient(90deg,transparent 0 11px,rgba(196,139,88,.55) 11px 12px),
+  repeating-linear-gradient(90deg,transparent 0 59px,rgba(196,139,88,.9) 59px 61px);
+  background-color:#2E2B28;border-bottom:1px solid var(--line);
+}
+
+/* ---------- layout ---------- */
+.wrap{display:grid;grid-template-columns:248px 1fr;min-height:calc(100vh - 70px)}
+.rail{
+  background:var(--chrome);border-right:1px solid var(--line);
+  padding:18px 16px 26px;position:sticky;top:70px;height:calc(100vh - 70px);overflow:auto;
+}
+.rail::-webkit-scrollbar{width:8px}.rail::-webkit-scrollbar-thumb{background:#57504A;border-radius:4px}
+.rail h3{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  margin:20px 0 8px;
+}
+.rail h3:first-child{margin-top:2px}
+.seg{display:flex;background:#3C3833;border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
+.seg button{
+  flex:1;background:none;border:none;color:var(--muted);cursor:pointer;
+  font-family:'Outfit';font-size:12px;font-weight:500;padding:6px 4px;border-radius:6px;
+}
+.seg button.on{background:var(--bronze-deep);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  background:#3C3833;border:1px solid var(--line);border-radius:20px;color:var(--muted);
+  font-size:12px;font-family:'Outfit';padding:5px 11px;cursor:pointer;transition:all .12s;
+}
+.chip.on{background:rgba(196,139,88,.18);border-color:var(--bronze-deep);color:var(--bronze-soft)}
+.chip:hover{border-color:var(--bronze-deep)}
+/* year range */
+.yr-lab{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--bronze-soft);margin-bottom:6px}
+.range-wrap{position:relative;height:26px}
+.range-wrap input[type=range]{
+  position:absolute;left:0;right:0;top:8px;width:100%;appearance:none;-webkit-appearance:none;
+  background:none;pointer-events:none;height:4px;
+}
+.range-track{position:absolute;left:0;right:0;top:11px;height:4px;border-radius:2px;background:#332F2B}
+.range-fill{position:absolute;top:11px;height:4px;border-radius:2px;background:var(--bronze)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;pointer-events:auto;
+  width:15px;height:15px;border-radius:50%;background:var(--bronze-soft);
+  border:2px solid var(--chrome);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+input[type=range]::-moz-range-thumb{
+  pointer-events:auto;width:13px;height:13px;border-radius:50%;background:var(--bronze-soft);
+  border:2px solid var(--chrome);cursor:pointer;
+}
+.btn{
+  width:100%;background:none;border:1px solid var(--line);border-radius:9px;color:var(--muted);
+  font-family:'Outfit';font-size:12.5px;font-weight:500;padding:8px;cursor:pointer;margin-top:8px;
+}
+.btn:hover{border-color:var(--bronze-deep);color:var(--bronze-soft)}
+.rail .note{font-size:11px;color:var(--faint);line-height:1.5;margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+
+/* ---------- main ---------- */
+.main{padding:20px 22px 30px;min-width:0}
+.view{display:none}
+.view.on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.view.on{animation:none}}
+.viewhead{margin:2px 0 16px}
+.viewhead h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px;letter-spacing:.01em}
+.viewhead p{color:var(--muted);font-size:13px;margin-top:3px;max-width:820px;line-height:1.55}
+
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:14px}
+.kpi{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:13px 15px 12px;position:relative;overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--bronze-deep)}
+.kpi .k-lab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.kpi .k-val{font-family:'IBM Plex Mono',monospace;font-size:23px;font-weight:600;margin:5px 0 2px;color:var(--ink)}
+.kpi .k-sub{font-size:11.5px;color:var(--muted)}
+.kpi .up{color:var(--good)} .kpi .dn{color:var(--bad)}
+
+/* chart grid + cards */
+.grid{display:grid;gap:14px}
+.g-2{grid-template-columns:2fr 1fr}
+.g-11{grid-template-columns:1fr 1fr}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px 16px 10px;min-width:0;margin-bottom:14px;
+}
+.card .c-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.card .c-title{font-size:14px;font-weight:600;letter-spacing:.01em}
+.card .c-sub{font-size:11.5px;color:var(--faint)}
+.card .c-tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+.mini-seg{display:flex;background:#3C3833;border:1px solid var(--line);border-radius:7px;padding:2px;gap:2px}
+.mini-seg button{background:none;border:none;color:var(--muted);font-family:'Outfit';font-size:11px;padding:4px 9px;border-radius:5px;cursor:pointer}
+.mini-seg button.on{background:var(--bronze-deep);color:var(--ink)}
+.ch{width:100%;height:340px}
+.ch.tall{height:400px}.ch.short{height:270px}
+.badge{
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--bronze-soft);background:rgba(196,139,88,.12);border:1px solid rgba(196,139,88,.3);
+  border-radius:20px;padding:2px 8px;
+}
+.explain{
+  background:linear-gradient(135deg,rgba(196,139,88,.10),rgba(196,139,88,.03));
+  border:1px solid rgba(196,139,88,.25);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:14px;font-size:13px;line-height:1.65;color:var(--muted);max-width:1000px;
+}
+.explain b{color:var(--bronze-soft);font-weight:600}
+
+/* league year control */
+.play-row{display:flex;align-items:center;gap:10px;margin:2px 0 6px}
+.play-row input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:4px;border-radius:2px;background:#332F2B}
+.play-btn{
+  background:var(--bronze-deep);border:none;color:var(--ink);border-radius:7px;
+  font-family:'Outfit';font-size:12px;font-weight:600;padding:6px 13px;cursor:pointer;
+}
+.play-yr{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--bronze-soft);min-width:44px;text-align:center}
+
+/* data table */
+.tbl-wrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{
+  position:sticky;top:0;background:var(--chrome);color:var(--bronze-soft);text-align:right;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 12px;border-bottom:1px solid rgba(242,236,227,.05);text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);white-space:nowrap}
+td:first-child{font-family:'Outfit';color:var(--ink)}
+tr:hover td{background:rgba(196,139,88,.05)}
+
+/* footer */
+.foot{
+  border-top:1px solid var(--line);margin-top:8px;padding:16px 22px 26px;
+  color:var(--faint);font-size:11.5px;line-height:1.7;background:var(--chrome);
+}
+.foot b{color:var(--muted)}
+.foot a{color:var(--bronze-soft);text-decoration:none}
+.foot a:hover{text-decoration:underline}
+
+@media (max-width:1000px){
+  .wrap{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .g-2,.g-11{grid-template-columns:1fr}
+  .tabs{margin-left:0;width:100%;overflow-x:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>Swiss Watch <em>·</em> GCC Observatory</h1>
+    <span class="tag">HS 9101–9102 · 2014–2025 · v7.0.0</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-v="overview">Overview</button>
+    <button class="tab" data-v="markets">Markets</button>
+    <button class="tab" data-v="mirror">Mirror gap</button>
+    <button class="tab" data-v="premium">Premiumisation</button>
+    <button class="tab" data-v="data">Data</button>
+  </nav>
+</header>
+<div class="bezel" aria-hidden="true"></div>
+
+<div class="wrap">
+  <aside class="rail">
+    <h3>Direction</h3>
+    <div class="seg" id="segDir">
+      <button data-val="CH_export" class="on">CH export</button>
+      <button data-val="GCC_import">GCC import</button>
+    </div>
+
+    <h3>HS chapter</h3>
+    <div class="seg" id="segHS">
+      <button data-val="all" class="on">All</button>
+      <button data-val="9101">9101</button>
+      <button data-val="9102">9102</button>
+    </div>
+
+    <h3>Markets</h3>
+    <div class="chips" id="chips"></div>
+
+    <h3>Years</h3>
+    <div class="yr-lab"><span id="yLo">2014</span><span id="yHi">2025</span></div>
+    <div class="range-wrap">
+      <div class="range-track"></div><div class="range-fill" id="rFill"></div>
+      <input type="range" id="rLo" min="2014" max="2025" value="2014" step="1" aria-label="From year">
+      <input type="range" id="rHi" min="2014" max="2025" value="2025" step="1" aria-label="To year">
+    </div>
+
+    <button class="btn" id="btnReset">Reset filters</button>
+    <button class="btn" id="btnCSV">Download filtered CSV</button>
+
+    <div class="note">
+      HS 9101: wrist-watches, precious-metal case.<br>
+      HS 9102: other wrist-watches.<br><br>
+      Slicers drive the Overview, Mirror gap, Premiumisation and Data views.
+      FH world-scope panels are marked <span class="badge">World · FH</span>.
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="view on" id="v-overview">
+      <div class="viewhead">
+        <h2>Overview</h2>
+        <p>Swiss watch trade with the six GCC states, built from UN Comtrade bilateral records and Federation of the Swiss Watch Industry statistics.</p>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid g-2">
+        <div class="card">
+          <div class="c-head">
+            <span class="c-title" id="trendTitle">Trade value by market</span>
+            <span class="c-sub" id="trendSub"></span>
+            <div class="c-tools">
+              <div class="mini-seg" id="segMeasure">
+                <button data-val="value" class="on">Value</button>
+                <button data-val="yoy">YoY %</button>
+                <button data-val="uv">$/watch</button>
+              </div>
+            </div>
+          </div>
+          <div class="ch tall" id="chTrend"></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="c-head"><span class="c-title">Composition, latest year</span><span class="c-sub" id="donutSub"></span></div>
+            <div class="ch short" id="chDonut"></div>
+          </div>
+          <div class="card">
+            <div class="c-head"><span class="c-title">Concentration (HHI)</span><span class="c-sub">computed on filtered set</span></div>
+            <div class="ch" id="chHHI" style="height:190px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MARKETS ============ -->
+    <section class="view" id="v-markets">
+      <div class="viewhead">
+        <h2>Markets</h2>
+        <p>How the UAE compares with the world's leading Swiss watch destinations. Panels here use Federation (FH) world-scope statistics; the year slicer applies.</p>
+      </div>
+      <div class="card">
+        <div class="c-head">
+          <span class="c-title">Share of world Swiss watch exports</span>
+          <span class="badge">World · FH</span>
+        </div>
+        <div class="play-row">
+          <button class="play-btn" id="playBtn">▶ Play</button>
+          <input type="range" id="leagueYr" min="2000" max="2025" step="5" value="2025" aria-label="League year">
+          <span class="play-yr" id="leagueYrLbl">2025</span>
+        </div>
+        <div class="ch tall" id="chLeague"></div>
+      </div>
+      <div class="grid g-11">
+        <div class="card">
+          <div class="c-head"><span class="c-title">Indexed growth, 2015 = 100</span><span class="badge">World · FH</span></div>
+          <div class="ch" id="chIndex"></div>
+        </div>
+        <div class="card">
+          <div class="c-head"><span class="c-title">UAE vs USA value ratio</span><span class="badge">World · FH</span></div>
+          <div class="ch" id="chRatio"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MIRROR ============ -->
+    <section class="view" id="v-mirror">
+      <div class="viewhead">
+        <h2>Mirror gap</h2>
+        <p>The asymmetry between what Switzerland reports exporting to each GCC state and what that state reports importing from Switzerland.</p>
+      </div>
+      <div class="explain">
+        <b>Reading the gap.</b> A <b>negative</b> gap means the GCC state records more imports than Switzerland records exports — consistent with re-routing through entrepôt hubs, CIF/FOB valuation differences, or timing effects. A <b>positive</b> gap means Swiss-reported exports exceed partner-reported imports. Persistent, structured gaps are an analytical signal, not a data error.
+      </div>
+      <div class="card">
+        <div class="c-head"><span class="c-title">Mirror gap heatmap</span><span class="c-sub" id="heatSub">country × year, %</span></div>
+        <div class="ch" id="chHeat"></div>
+      </div>
+      <div class="card">
+        <div class="c-head"><span class="c-title">Mirror gap over time</span><span class="c-sub">% of Swiss-reported exports</span></div>
+        <div class="ch" id="chMirrorLine"></div>
+      </div>
+    </section>
+
+    <!-- ============ PREMIUM ============ -->
+    <section class="view" id="v-premium">
+      <div class="viewhead">
+        <h2>Premiumisation</h2>
+        <p>Structural shift toward precious-metal cases, higher price bands and mechanical movements.</p>
+      </div>
+      <div class="grid g-11">
+        <div class="card">
+          <div class="c-head"><span class="c-title">Precious-metal value share</span><span class="c-sub">HS 9101 share of 9101+9102, filtered direction</span></div>
+          <div class="ch" id="chPrecious"></div>
+        </div>
+        <div class="card">
+          <div class="c-head"><span class="c-title">World export value by price band</span><span class="badge">World · FH</span></div>
+          <div class="ch" id="chBands"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="c-head">
+          <span class="c-title">Movement mix within HS 9102</span>
+          <span class="c-sub" id="moveSub">electrically operated vs residual mechanical proxy (upper bound)</span>
+          <div class="c-tools"><div class="mini-seg" id="segMoveC"></div></div>
+        </div>
+        <div class="ch" id="chMove"></div>
+      </div>
+    </section>
+
+    <!-- ============ DATA ============ -->
+    <section class="view" id="v-data">
+      <div class="viewhead">
+        <h2>Data</h2>
+        <p>Filtered annual records (2-digit HS). Use the rail to slice, then download the current view as CSV.</p>
+      </div>
+      <div class="card">
+        <div class="c-head"><span class="c-title">Annual records</span><span class="c-sub" id="tCount"></span></div>
+        <div class="tbl-wrap"><table id="tbl"></table></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <b>Swiss Watch–GCC Trade Dataset v7.0.0</b> · DOI <a href="https://doi.org/10.5281/zenodo.20846060" target="_blank" rel="noopener">10.5281/zenodo.20846060</a> ·
+  Sources: UN Comtrade (bilateral trade, HS 9101–9102) and Federation of the Swiss Watch Industry FH (world statistics).<br>
+  Absolute trade values shown here derive from UN Comtrade and are displayed for research and educational purposes; consult UN Comtrade terms before redistribution.
+  Indicator series are CC-BY-4.0. Dashboard by M. Hassouna · Higher Colleges of Technology.
+</footer>
+
+<script>
+const DATA = {"annual":[["United Arab Emirates","CH_export",9101,2014,493438186.0,25253.0,19540.0,null,61.72,4197.0],["United Arab Emirates","CH_export",9101,2015,425409670.0,21485.0,19800.0,-13.8,57.0,3803.0],["United Arab Emirates","CH_export",9101,2016,377690524.0,18273.0,20669.0,-11.2,58.59,3890.0],["United Arab Emirates","CH_export",9101,2017,350609526.0,18619.0,18831.0,-7.2,55.95,3647.0],["United Arab Emirates","CH_export",9101,2018,347772695.0,18714.0,18584.0,-0.8,49.03,3033.0],["United Arab Emirates","CH_export",9101,2019,343546813.0,16757.0,20502.0,-1.2,53.88,3408.0],["United Arab Emirates","CH_export",9101,2020,316926314.0,12492.0,25370.0,-7.7,48.37,3006.0],["United Arab Emirates","CH_export",9101,2021,450599958.0,16341.0,27575.0,42.2,54.62,3496.0],["United Arab Emirates","CH_export",9101,2022,497960319.0,17582.0,28322.0,10.5,52.97,3369.0],["United Arab Emirates","CH_export",9101,2023,607136321.0,18147.0,33457.0,21.9,56.64,3662.0],["United Arab Emirates","CH_export",9101,2024,620577338.0,18178.0,34139.0,2.2,57.08,3683.0],["United Arab Emirates","CH_export",9101,2025,740855219.0,19036.0,38919.0,19.4,58.79,3847.0],["United Arab Emirates","CH_export",9102,2014,603867536.0,1082703.0,558.0,null,50.5,3375.0],["United Arab Emirates","CH_export",9102,2015,546259297.0,963605.0,567.0,-9.5,49.32,3371.0],["United Arab Emirates","CH_export",9102,2016,543323537.0,862270.0,630.0,-0.5,51.16,3340.0],["United Arab Emirates","CH_export",9102,2017,539519328.0,862910.0,625.0,-0.7,51.91,3345.0],["United Arab Emirates","CH_export",9102,2018,570499019.0,739923.0,771.0,5.7,49.46,3138.0],["United Arab Emirates","CH_export",9102,2019,580360034.0,727936.0,797.0,1.7,50.32,3184.0],["United Arab Emirates","CH_export",9102,2020,480494973.0,359426.0,1337.0,-17.2,52.97,3346.0],["United Arab Emirates","CH_export",9102,2021,623122929.0,444993.0,1400.0,29.7,51.99,3273.0],["United Arab Emirates","CH_export",9102,2022,660888850.0,531043.0,1245.0,6.1,51.68,3250.0],["United Arab Emirates","CH_export",9102,2023,775118269.0,541369.0,1432.0,17.3,53.85,3429.0],["United Arab Emirates","CH_export",9102,2024,782392062.0,512059.0,1528.0,0.9,54.67,3506.0],["United Arab Emirates","CH_export",9102,2025,827232715.0,469402.0,1762.0,5.7,54.46,3526.0],["United Arab Emirates","GCC_import",9101,2014,704526835.0,null,null,null,52.46,3499.0],["United Arab Emirates","GCC_import",9101,2015,697665374.0,null,null,-1.0,58.52,3943.0],["United Arab Emirates","GCC_import",9101,2016,661408494.0,67135.0,9852.0,-5.2,57.64,3801.0],["United Arab Emirates","GCC_import",9101,2017,939161114.0,153568.0,6116.0,42.0,65.89,4633.0],["United Arab Emirates","GCC_import",9101,2018,816937140.0,79165.0,10319.0,-13.0,65.73,4606.0],["United Arab Emirates","GCC_import",9101,2019,798270731.0,77535.0,10296.0,-2.3,65.33,4629.0],["United Arab Emirates","GCC_import",9101,2020,556627619.0,52586.0,10585.0,-30.3,53.72,3580.0],["United Arab Emirates","GCC_import",9101,2021,883064544.0,65564.0,13469.0,58.6,57.79,4048.0],["United Arab Emirates","GCC_import",9101,2022,934644349.0,71855.0,13007.0,5.8,57.6,4004.0],["United Arab Emirates","GCC_import",9101,2023,1335737874.0,103329.0,12927.0,42.9,63.28,4603.0],["United Arab Emirates","GCC_import",9102,2014,282552045.0,null,null,null,41.95,2724.0],["United Arab Emirates","GCC_import",9102,2015,208768593.0,null,null,-26.1,29.21,2552.0],["United Arab Emirates","GCC_import",9102,2016,295937646.0,3168954.0,93.0,41.8,40.71,2689.0],["United Arab Emirates","GCC_import",9102,2017,423389680.0,3959913.0,107.0,43.1,49.68,3146.0],["United Arab Emirates","GCC_import",9102,2018,541537843.0,3398900.0,159.0,27.9,49.93,3235.0],["United Arab Emirates","GCC_import",9102,2019,631204450.0,4390035.0,144.0,16.6,58.29,3864.0],["United Arab Emirates","GCC_import",9102,2020,534226842.0,null,null,-15.4,64.29,4520.0],["United Arab Emirates","GCC_import",9102,2021,762313583.0,3084673.0,247.0,42.7,67.27,4877.0],["United Arab Emirates","GCC_import",9102,2022,868255617.0,null,null,13.9,64.82,4579.0],["United Arab Emirates","GCC_import",9102,2023,1008461000.0,4045662.0,249.0,16.1,67.11,4856.0],["Bahrain","CH_export",9101,2014,26106010.0,1115.0,23413.0,null,3.27,4197.0],["Bahrain","CH_export",9101,2015,21400173.0,905.0,23647.0,-18.0,2.87,3803.0],["Bahrain","CH_export",9101,2016,24217237.0,939.0,25790.0,13.2,3.76,3890.0],["Bahrain","CH_export",9101,2017,27831658.0,1179.0,23606.0,14.9,4.44,3647.0],["Bahrain","CH_export",9101,2018,40496594.0,1807.0,22411.0,45.5,5.71,3033.0],["Bahrain","CH_export",9101,2019,36638254.0,1635.0,22409.0,-9.5,5.75,3408.0],["Bahrain","CH_export",9101,2020,31882355.0,1172.0,27203.0,-13.0,4.87,3006.0],["Bahrain","CH_export",9101,2021,45293556.0,1568.0,28886.0,42.1,5.49,3496.0],["Bahrain","CH_export",9101,2022,58616146.0,1914.0,30625.0,29.4,6.24,3369.0],["Bahrain","CH_export",9101,2023,63576604.0,1922.0,33078.0,8.5,5.93,3662.0],["Bahrain","CH_export",9101,2024,68121865.0,1880.0,36235.0,7.1,6.27,3683.0],["Bahrain","CH_export",9101,2025,77358960.0,2085.0,37103.0,13.6,6.14,3847.0],["Bahrain","CH_export",9102,2014,65022737.0,43886.0,1482.0,null,5.44,3375.0],["Bahrain","CH_export",9102,2015,55625038.0,45062.0,1234.0,-14.5,5.02,3371.0],["Bahrain","CH_export",9102,2016,67448335.0,61183.0,1102.0,21.3,6.35,3340.0],["Bahrain","CH_export",9102,2017,73695794.0,72137.0,1022.0,9.3,7.09,3345.0],["Bahrain","CH_export",9102,2018,91281055.0,66470.0,1373.0,23.9,7.91,3138.0],["Bahrain","CH_export",9102,2019,93031203.0,56714.0,1640.0,1.9,8.07,3184.0],["Bahrain","CH_export",9102,2020,66858973.0,39003.0,1714.0,-28.1,7.37,3346.0],["Bahrain","CH_export",9102,2021,104125956.0,51990.0,2003.0,55.7,8.69,3273.0],["Bahrain","CH_export",9102,2022,94115092.0,49734.0,1892.0,-9.6,7.36,3250.0],["Bahrain","CH_export",9102,2023,98484546.0,46817.0,2104.0,4.6,6.84,3429.0],["Bahrain","CH_export",9102,2024,70839074.0,30483.0,2324.0,-28.1,4.95,3506.0],["Bahrain","CH_export",9102,2025,71168323.0,29691.0,2397.0,0.5,4.69,3526.0],["Bahrain","GCC_import",9101,2014,21651290.0,2449.0,8841.0,null,1.61,3499.0],["Bahrain","GCC_import",9101,2015,22726660.0,4467.0,5088.0,5.0,1.91,3943.0],["Bahrain","GCC_import",9101,2016,40494918.0,10137.0,3995.0,78.2,3.53,3801.0],["Bahrain","GCC_import",9101,2017,43021509.0,6807.0,6320.0,6.2,3.02,4633.0],["Bahrain","GCC_import",9101,2018,83428249.0,10017.0,8328.0,93.9,6.71,4606.0],["Bahrain","GCC_import",9101,2019,33999223.0,3334.0,10197.0,-59.2,2.78,4629.0],["Bahrain","GCC_import",9101,2020,33700693.0,2997.0,11245.0,-0.9,3.25,3580.0],["Bahrain","GCC_import",9101,2021,47082319.0,2442.0,19282.0,39.7,3.08,4048.0],["Bahrain","GCC_import",9101,2022,52982659.0,2419.0,21899.0,12.5,3.26,4004.0],["Bahrain","GCC_import",9101,2023,50439807.0,3360.0,15014.0,-4.8,2.39,4603.0],["Bahrain","GCC_import",9101,2024,56986781.0,2194.0,25974.0,13.0,7.51,3458.0],["Bahrain","GCC_import",9102,2014,28822132.0,20757.0,1389.0,null,4.28,2724.0],["Bahrain","GCC_import",9102,2015,25144130.0,26895.0,935.0,-12.8,3.52,2552.0],["Bahrain","GCC_import",9102,2016,38605943.0,51609.0,748.0,53.5,5.31,2689.0],["Bahrain","GCC_import",9102,2017,66153341.0,82213.0,805.0,71.4,7.76,3146.0],["Bahrain","GCC_import",9102,2018,80515918.0,76368.0,1054.0,21.7,7.42,3235.0],["Bahrain","GCC_import",9102,2019,54721834.0,41736.0,1311.0,-32.0,5.05,3864.0],["Bahrain","GCC_import",9102,2020,44448398.0,20977.0,2119.0,-18.8,5.35,4520.0],["Bahrain","GCC_import",9102,2021,59174256.0,22663.0,2611.0,33.1,5.22,4877.0],["Bahrain","GCC_import",9102,2022,86201031.0,38057.0,2265.0,45.7,6.44,4579.0],["Bahrain","GCC_import",9102,2023,103650787.0,273355.0,379.0,20.2,6.9,4856.0],["Bahrain","GCC_import",9102,2024,78736515.0,32270.0,2440.0,-24.0,18.11,3363.0],["Kuwait","CH_export",9101,2014,28050396.0,1281.0,21897.0,null,3.51,4197.0],["Kuwait","CH_export",9101,2015,26571660.0,1183.0,22461.0,-5.3,3.56,3803.0],["Kuwait","CH_export",9101,2016,28322408.0,1092.0,25936.0,6.6,4.39,3890.0],["Kuwait","CH_export",9101,2017,26738813.0,1062.0,25178.0,-5.6,4.27,3647.0],["Kuwait","CH_export",9101,2018,30230023.0,1041.0,29039.0,13.1,4.26,3033.0],["Kuwait","CH_export",9101,2019,31634868.0,1121.0,28220.0,4.6,4.96,3408.0],["Kuwait","CH_export",9101,2020,29506279.0,938.0,31457.0,-6.7,4.5,3006.0],["Kuwait","CH_export",9101,2021,39919003.0,1416.0,28191.0,35.3,4.84,3496.0],["Kuwait","CH_export",9101,2022,46972540.0,1971.0,23832.0,17.7,5.0,3369.0],["Kuwait","CH_export",9101,2023,60394480.0,2102.0,28732.0,28.6,5.63,3662.0],["Kuwait","CH_export",9101,2024,70363533.0,2324.0,30277.0,16.5,6.47,3683.0],["Kuwait","CH_export",9101,2025,87170073.0,2573.0,33879.0,23.9,6.92,3847.0],["Kuwait","CH_export",9102,2014,108884817.0,116793.0,932.0,null,9.11,3375.0],["Kuwait","CH_export",9102,2015,104998742.0,114436.0,918.0,-3.6,9.48,3371.0],["Kuwait","CH_export",9102,2016,115624649.0,119259.0,970.0,10.1,10.89,3340.0],["Kuwait","CH_export",9102,2017,111423335.0,119359.0,934.0,-3.6,10.72,3345.0],["Kuwait","CH_export",9102,2018,121488490.0,116302.0,1045.0,9.0,10.53,3138.0],["Kuwait","CH_export",9102,2019,116266678.0,86016.0,1352.0,-4.3,10.08,3184.0],["Kuwait","CH_export",9102,2020,97538530.0,56751.0,1719.0,-16.1,10.75,3346.0],["Kuwait","CH_export",9102,2021,123575010.0,63727.0,1939.0,26.7,10.31,3273.0],["Kuwait","CH_export",9102,2022,125774173.0,68222.0,1844.0,1.8,9.83,3250.0],["Kuwait","CH_export",9102,2023,137108189.0,74545.0,1839.0,9.0,9.53,3429.0],["Kuwait","CH_export",9102,2024,142101107.0,66800.0,2127.0,3.6,9.93,3506.0],["Kuwait","CH_export",9102,2025,137804044.0,64678.0,2131.0,-3.0,9.07,3526.0],["Kuwait","GCC_import",9101,2014,123414107.0,33961.0,3634.0,null,9.19,3499.0],["Kuwait","GCC_import",9101,2015,106529373.0,25660.0,4152.0,-13.7,8.94,3943.0],["Kuwait","GCC_import",9101,2016,110847134.0,22983.0,4823.0,4.1,9.66,3801.0],["Kuwait","GCC_import",9101,2017,106153755.0,17276.0,6145.0,-4.2,7.45,4633.0],["Kuwait","GCC_import",9101,2018,79284981.0,8401.0,9438.0,-25.3,6.38,4606.0],["Kuwait","GCC_import",9101,2019,91153348.0,9913.0,9195.0,15.0,7.46,4629.0],["Kuwait","GCC_import",9101,2020,68764597.0,4890.0,14063.0,-24.6,6.64,3580.0],["Kuwait","GCC_import",9101,2021,94335805.0,10579.0,8917.0,37.2,6.17,4048.0],["Kuwait","GCC_import",9101,2022,69717651.0,5087.0,13704.0,-26.1,4.3,4004.0],["Kuwait","GCC_import",9101,2023,65682851.0,4242.0,15484.0,-5.8,3.11,4603.0],["Kuwait","GCC_import",9101,2024,150302674.0,10662.0,14097.0,128.8,19.81,3458.0],["Kuwait","GCC_import",9102,2014,104213933.0,407933.0,255.0,null,15.47,2724.0],["Kuwait","GCC_import",9102,2015,105501204.0,157867.0,668.0,1.2,14.76,2552.0],["Kuwait","GCC_import",9102,2016,116404105.0,236173.0,493.0,10.3,16.01,2689.0],["Kuwait","GCC_import",9102,2017,105020665.0,166170.0,632.0,-9.8,12.32,3146.0],["Kuwait","GCC_import",9102,2018,117404634.0,598641.0,196.0,11.8,10.82,3235.0],["Kuwait","GCC_import",9102,2019,96401987.0,149952.0,643.0,-17.9,8.9,3864.0],["Kuwait","GCC_import",9102,2020,101110979.0,727136.0,139.0,4.9,12.17,4520.0],["Kuwait","GCC_import",9102,2021,150478771.0,413892.0,364.0,48.8,13.28,4877.0],["Kuwait","GCC_import",9102,2022,175028207.0,null,null,16.3,13.07,4579.0],["Kuwait","GCC_import",9102,2023,196746033.0,718968.0,274.0,12.4,13.09,4856.0],["Kuwait","GCC_import",9102,2024,119535076.0,null,null,-39.2,27.5,3363.0],["Oman","CH_export",9101,2014,54784091.0,1141.0,48014.0,null,6.85,4197.0],["Oman","CH_export",9101,2015,41665233.0,752.0,55406.0,-23.9,5.58,3803.0],["Oman","CH_export",9101,2016,48191081.0,950.0,50727.0,15.7,7.48,3890.0],["Oman","CH_export",9101,2017,48559878.0,1174.0,41363.0,0.8,7.75,3647.0],["Oman","CH_export",9101,2018,73549510.0,2286.0,32174.0,51.5,10.37,3033.0],["Oman","CH_export",9101,2019,49310907.0,1933.0,25510.0,-33.0,7.73,3408.0],["Oman","CH_export",9101,2020,116991950.0,2138.0,54720.0,137.3,17.86,3006.0],["Oman","CH_export",9101,2021,66671373.0,892.0,74744.0,-43.0,8.08,3496.0],["Oman","CH_export",9101,2022,47697975.0,1014.0,47039.0,-28.5,5.07,3369.0],["Oman","CH_export",9101,2023,54999691.0,978.0,56237.0,15.3,5.13,3662.0],["Oman","CH_export",9101,2024,53252728.0,797.0,66816.0,-3.2,4.9,3683.0],["Oman","CH_export",9101,2025,52428318.0,808.0,64887.0,-1.5,4.16,3847.0],["Oman","CH_export",9102,2014,15949883.0,11044.0,1444.0,null,1.33,3375.0],["Oman","CH_export",9102,2015,10515234.0,11643.0,903.0,-34.1,0.95,3371.0],["Oman","CH_export",9102,2016,16645057.0,18051.0,922.0,58.3,1.57,3340.0],["Oman","CH_export",9102,2017,19621691.0,21712.0,904.0,17.9,1.89,3345.0],["Oman","CH_export",9102,2018,20288244.0,25067.0,809.0,3.4,1.76,3138.0],["Oman","CH_export",9102,2019,23161881.0,28110.0,824.0,14.2,2.01,3184.0],["Oman","CH_export",9102,2020,22791855.0,17492.0,1303.0,-1.6,2.51,3346.0],["Oman","CH_export",9102,2021,25635363.0,21878.0,1172.0,12.5,2.14,3273.0],["Oman","CH_export",9102,2022,28391962.0,19613.0,1448.0,10.8,2.22,3250.0],["Oman","CH_export",9102,2023,34981402.0,24591.0,1423.0,23.2,2.43,3429.0],["Oman","CH_export",9102,2024,43724679.0,28208.0,1550.0,25.0,3.06,3506.0],["Oman","CH_export",9102,2025,38301832.0,26204.0,1462.0,-12.4,2.52,3526.0],["Oman","GCC_import",9101,2014,49562068.0,20672.0,2398.0,null,3.69,3499.0],["Oman","GCC_import",9101,2015,34422421.0,10305.0,3340.0,-30.5,2.89,3943.0],["Oman","GCC_import",9101,2016,43256800.0,8711.0,4966.0,25.7,3.77,3801.0],["Oman","GCC_import",9101,2017,48078394.0,14937.0,3219.0,11.1,3.37,4633.0],["Oman","GCC_import",9101,2018,15774774.0,1106.0,14258.0,-67.2,1.27,4606.0],["Oman","GCC_import",9101,2019,11932095.0,753.0,15851.0,-24.4,0.98,4629.0],["Oman","GCC_import",9101,2020,51323486.0,3290.0,15598.0,330.1,4.95,3580.0],["Oman","GCC_import",9101,2021,3603584.0,197.0,18300.0,-93.0,0.24,4048.0],["Oman","GCC_import",9101,2022,2011358.0,174.0,11560.0,-44.2,0.12,4004.0],["Oman","GCC_import",9101,2023,924257.0,106.0,8702.0,-54.0,0.04,4603.0],["Oman","GCC_import",9101,2024,1496081.0,154.0,9707.0,61.9,0.2,3458.0],["Oman","GCC_import",9102,2014,14472727.0,null,null,null,2.15,2724.0],["Oman","GCC_import",9102,2015,17010207.0,188071.0,90.0,17.5,2.38,2552.0],["Oman","GCC_import",9102,2016,11641976.0,98152.0,119.0,-31.6,1.6,2689.0],["Oman","GCC_import",9102,2017,17773845.0,119515.0,149.0,52.7,2.09,3146.0],["Oman","GCC_import",9102,2018,15589608.0,136243.0,114.0,-12.3,1.44,3235.0],["Oman","GCC_import",9102,2019,15801372.0,143016.0,110.0,1.4,1.46,3864.0],["Oman","GCC_import",9102,2020,4778962.0,null,null,-69.8,0.58,4520.0],["Oman","GCC_import",9102,2021,6015896.0,34199.0,176.0,25.9,0.53,4877.0],["Oman","GCC_import",9102,2022,6640406.0,null,null,10.4,0.5,4579.0],["Oman","GCC_import",9102,2023,9298213.0,78852.0,118.0,40.0,0.62,4856.0],["Oman","GCC_import",9102,2024,8099113.0,null,null,-12.9,1.86,3363.0],["Qatar","CH_export",9101,2014,77156057.0,2123.0,36343.0,null,9.65,4197.0],["Qatar","CH_export",9101,2015,90823210.0,2495.0,36402.0,17.7,12.17,3803.0],["Qatar","CH_export",9101,2016,55989460.0,1542.0,36310.0,-38.4,8.69,3890.0],["Qatar","CH_export",9101,2017,59162901.0,1906.0,31040.0,5.7,9.44,3647.0],["Qatar","CH_export",9101,2018,103457065.0,3182.0,32513.0,74.9,14.59,3033.0],["Qatar","CH_export",9101,2019,79325196.0,2710.0,29271.0,-23.3,12.44,3408.0],["Qatar","CH_export",9101,2020,69214294.0,2543.0,27218.0,-12.7,10.56,3006.0],["Qatar","CH_export",9101,2021,79498565.0,3275.0,24274.0,14.9,9.64,3496.0],["Qatar","CH_export",9101,2022,137137463.0,4490.0,30543.0,72.5,14.59,3369.0],["Qatar","CH_export",9101,2023,125879291.0,4203.0,29950.0,-8.2,11.74,3662.0],["Qatar","CH_export",9101,2024,142641516.0,4335.0,32905.0,13.3,13.12,3683.0],["Qatar","CH_export",9101,2025,154972183.0,4306.0,35990.0,8.6,12.3,3847.0],["Qatar","CH_export",9102,2014,99037761.0,53252.0,1860.0,null,8.28,3375.0],["Qatar","CH_export",9102,2015,83670913.0,56076.0,1492.0,-15.5,7.55,3371.0],["Qatar","CH_export",9102,2016,80519619.0,77064.0,1045.0,-3.8,7.58,3340.0],["Qatar","CH_export",9102,2017,82542677.0,80029.0,1031.0,2.5,7.94,3345.0],["Qatar","CH_export",9102,2018,114760669.0,103785.0,1106.0,39.0,9.95,3138.0],["Qatar","CH_export",9102,2019,115387840.0,88367.0,1306.0,0.5,10.01,3184.0],["Qatar","CH_export",9102,2020,94574592.0,46478.0,2035.0,-18.0,10.43,3346.0],["Qatar","CH_export",9102,2021,120622527.0,70811.0,1703.0,27.5,10.06,3273.0],["Qatar","CH_export",9102,2022,162560677.0,77093.0,2109.0,34.8,12.71,3250.0],["Qatar","CH_export",9102,2023,163000927.0,70604.0,2309.0,0.3,11.33,3429.0],["Qatar","CH_export",9102,2024,165088236.0,73271.0,2253.0,1.3,11.54,3506.0],["Qatar","CH_export",9102,2025,172704753.0,55267.0,3125.0,4.6,11.37,3526.0],["Qatar","GCC_import",9101,2014,126836615.0,null,null,null,9.44,3499.0],["Qatar","GCC_import",9101,2015,111166582.0,10817.0,10277.0,-12.4,9.32,3943.0],["Qatar","GCC_import",9101,2016,96646466.0,8141.0,11871.0,-13.1,8.42,3801.0],["Qatar","GCC_import",9101,2017,112855859.0,10278.0,10981.0,16.8,7.92,4633.0],["Qatar","GCC_import",9101,2018,118759028.0,7780.0,15264.0,5.2,9.55,4606.0],["Qatar","GCC_import",9101,2019,103043946.0,null,null,-13.2,8.43,4629.0],["Qatar","GCC_import",9101,2020,82490327.0,5384.0,15322.0,-19.9,7.96,3580.0],["Qatar","GCC_import",9101,2021,129146617.0,8780.0,14709.0,56.6,8.45,4048.0],["Qatar","GCC_import",9101,2022,196587559.0,9987.0,19684.0,52.2,12.11,4004.0],["Qatar","GCC_import",9101,2023,181610164.0,13250.0,13706.0,-7.6,8.6,4603.0],["Qatar","GCC_import",9101,2024,169961555.0,12515.0,13580.0,-6.4,22.4,3458.0],["Qatar","GCC_import",9102,2014,88425651.0,null,null,null,13.13,2724.0],["Qatar","GCC_import",9102,2015,106556200.0,null,null,20.5,14.91,2552.0],["Qatar","GCC_import",9102,2016,85218665.0,1096385.0,78.0,-20.0,11.72,2689.0],["Qatar","GCC_import",9102,2017,71228530.0,759772.0,94.0,-16.4,8.36,3146.0],["Qatar","GCC_import",9102,2018,85939395.0,596724.0,144.0,20.7,7.92,3235.0],["Qatar","GCC_import",9102,2019,113579490.0,null,null,32.2,10.49,3864.0],["Qatar","GCC_import",9102,2020,116387584.0,468671.0,248.0,2.5,14.01,4520.0],["Qatar","GCC_import",9102,2021,136603413.0,null,null,17.4,12.05,4877.0],["Qatar","GCC_import",9102,2022,168192186.0,79518.0,2115.0,23.1,12.56,4579.0],["Qatar","GCC_import",9102,2023,172474357.0,872668.0,198.0,2.5,11.48,4856.0],["Qatar","GCC_import",9102,2024,206197085.0,null,null,19.6,47.43,3363.0],["Saudi Arabia","CH_export",9101,2014,120005249.0,5710.0,21017.0,null,15.01,4197.0],["Saudi Arabia","CH_export",9101,2015,140488473.0,4847.0,28985.0,17.1,18.82,3803.0],["Saudi Arabia","CH_export",9101,2016,110218485.0,3164.0,34835.0,-21.5,17.1,3890.0],["Saudi Arabia","CH_export",9101,2017,113722798.0,2921.0,38933.0,3.2,18.15,3647.0],["Saudi Arabia","CH_export",9101,2018,113745269.0,3862.0,29452.0,0.0,16.04,3033.0],["Saudi Arabia","CH_export",9101,2019,97143672.0,3395.0,28614.0,-14.6,15.24,3408.0],["Saudi Arabia","CH_export",9101,2020,90674382.0,3161.0,28685.0,-6.7,13.84,3006.0],["Saudi Arabia","CH_export",9101,2021,142926958.0,4738.0,30166.0,57.6,17.33,3496.0],["Saudi Arabia","CH_export",9101,2022,151710356.0,5132.0,29562.0,6.1,16.14,3369.0],["Saudi Arabia","CH_export",9101,2023,159954675.0,4459.0,35872.0,5.4,14.92,3662.0],["Saudi Arabia","CH_export",9101,2024,132334133.0,4604.0,28743.0,-17.3,12.17,3683.0],["Saudi Arabia","CH_export",9101,2025,147320941.0,4638.0,31764.0,11.3,11.69,3847.0],["Saudi Arabia","CH_export",9102,2014,302988787.0,1129593.0,268.0,null,25.34,3375.0],["Saudi Arabia","CH_export",9102,2015,306600374.0,1365965.0,224.0,1.2,27.68,3371.0],["Saudi Arabia","CH_export",9102,2016,238349788.0,943456.0,253.0,-22.3,22.45,3340.0],["Saudi Arabia","CH_export",9102,2017,212557883.0,615396.0,345.0,-10.8,20.45,3345.0],["Saudi Arabia","CH_export",9102,2018,235058179.0,678821.0,346.0,10.6,20.38,3138.0],["Saudi Arabia","CH_export",9102,2019,225064275.0,544303.0,413.0,-4.3,19.52,3184.0],["Saudi Arabia","CH_export",9102,2020,144873834.0,218952.0,662.0,-35.6,15.97,3346.0],["Saudi Arabia","CH_export",9102,2021,201485579.0,196039.0,1028.0,39.1,16.81,3273.0],["Saudi Arabia","CH_export",9102,2022,207170407.0,175102.0,1183.0,2.8,16.2,3250.0],["Saudi Arabia","CH_export",9102,2023,230593411.0,183670.0,1255.0,11.3,16.02,3429.0],["Saudi Arabia","CH_export",9102,2024,226880021.0,215604.0,1052.0,-1.6,15.85,3506.0],["Saudi Arabia","CH_export",9102,2025,271758070.0,256607.0,1059.0,19.8,17.89,3526.0],["Saudi Arabia","GCC_import",9101,2014,317009896.0,null,null,null,23.6,3499.0],["Saudi Arabia","GCC_import",9101,2015,219699869.0,46364.0,4739.0,-30.7,18.43,3943.0],["Saudi Arabia","GCC_import",9101,2016,194923977.0,111952.0,1741.0,-11.3,16.99,3801.0],["Saudi Arabia","GCC_import",9101,2017,176064233.0,59422.0,2963.0,-9.7,12.35,4633.0],["Saudi Arabia","GCC_import",9101,2018,128769204.0,46004.0,2799.0,-26.9,10.36,4606.0],["Saudi Arabia","GCC_import",9101,2019,183431465.0,37120.0,4942.0,42.4,15.01,4629.0],["Saudi Arabia","GCC_import",9101,2020,243197057.0,73229.0,3321.0,32.6,23.47,3580.0],["Saudi Arabia","GCC_import",9101,2021,370897535.0,37814.0,9809.0,52.5,24.27,4048.0],["Saudi Arabia","GCC_import",9101,2022,366829140.0,40079.0,9153.0,-1.1,22.61,4004.0],["Saudi Arabia","GCC_import",9101,2023,476575411.0,41606.0,11455.0,29.9,22.58,4603.0],["Saudi Arabia","GCC_import",9101,2024,379878521.0,22631.0,16786.0,-20.3,50.07,3458.0],["Saudi Arabia","GCC_import",9102,2014,155110065.0,null,null,null,23.03,2724.0],["Saudi Arabia","GCC_import",9102,2015,251771059.0,2265665.0,111.0,62.3,35.22,2552.0],["Saudi Arabia","GCC_import",9102,2016,179170891.0,2184620.0,82.0,-28.8,24.65,2689.0],["Saudi Arabia","GCC_import",9102,2017,168684389.0,2144287.0,79.0,-5.9,19.79,3146.0],["Saudi Arabia","GCC_import",9102,2018,243600985.0,2753346.0,88.0,44.4,22.46,3235.0],["Saudi Arabia","GCC_import",9102,2019,171236678.0,1950486.0,88.0,-29.7,15.81,3864.0],["Saudi Arabia","GCC_import",9102,2020,29950607.0,null,null,-82.5,3.6,4520.0],["Saudi Arabia","GCC_import",9102,2021,18659284.0,153242.0,122.0,-37.7,1.65,4877.0],["Saudi Arabia","GCC_import",9102,2022,35084435.0,null,null,88.0,2.62,4579.0],["Saudi Arabia","GCC_import",9102,2023,11988625.0,176934.0,68.0,-65.8,0.8,4856.0],["Saudi Arabia","GCC_import",9102,2024,22177060.0,338062.0,66.0,85.0,5.1,3363.0]],"mirror":[["United Arab Emirates",9101,2014,493438186.0,704526835.0,-35.2],["United Arab Emirates",9101,2015,425409670.0,697665374.0,-48.5],["United Arab Emirates",9101,2016,377690524.0,661408494.0,-54.6],["United Arab Emirates",9101,2017,350609526.0,939161114.0,-91.3],["United Arab Emirates",9101,2018,347772695.0,816937140.0,-80.6],["United Arab Emirates",9101,2019,343546813.0,798270731.0,-79.6],["United Arab Emirates",9101,2020,316926314.0,556627619.0,-54.9],["United Arab Emirates",9101,2021,450599958.0,883064544.0,-64.9],["United Arab Emirates",9101,2022,497960319.0,934644349.0,-61.0],["United Arab Emirates",9101,2023,607136321.0,1335737874.0,-75.0],["United Arab Emirates",9101,2024,620577338.0,null,null],["United Arab Emirates",9101,2025,740855219.0,null,null],["United Arab Emirates",9102,2014,603867536.0,282552045.0,72.5],["United Arab Emirates",9102,2015,546259297.0,208768593.0,89.4],["United Arab Emirates",9102,2016,543323537.0,295937646.0,59.0],["United Arab Emirates",9102,2017,539519328.0,423389680.0,24.1],["United Arab Emirates",9102,2018,570499019.0,541537843.0,5.2],["United Arab Emirates",9102,2019,580360034.0,631204450.0,-8.4],["United Arab Emirates",9102,2020,480494973.0,534226842.0,-10.6],["United Arab Emirates",9102,2021,623122929.0,762313583.0,-20.1],["United Arab Emirates",9102,2022,660888850.0,868255617.0,-27.1],["United Arab Emirates",9102,2023,775118269.0,1008461000.0,-26.2],["United Arab Emirates",9102,2024,782392062.0,null,null],["United Arab Emirates",9102,2025,827232715.0,null,null],["Bahrain",9101,2014,26106010.0,21651290.0,18.7],["Bahrain",9101,2015,21400173.0,22726660.0,-6.0],["Bahrain",9101,2016,24217237.0,40494918.0,-50.3],["Bahrain",9101,2017,27831658.0,43021509.0,-42.9],["Bahrain",9101,2018,40496594.0,83428249.0,-69.3],["Bahrain",9101,2019,36638254.0,33999223.0,7.5],["Bahrain",9101,2020,31882355.0,33700693.0,-5.5],["Bahrain",9101,2021,45293556.0,47082319.0,-3.9],["Bahrain",9101,2022,58616146.0,52982659.0,10.1],["Bahrain",9101,2023,63576604.0,50439807.0,23.0],["Bahrain",9101,2024,68121865.0,56986781.0,17.8],["Bahrain",9101,2025,77358960.0,null,null],["Bahrain",9102,2014,65022737.0,28822132.0,77.1],["Bahrain",9102,2015,55625038.0,25144130.0,75.5],["Bahrain",9102,2016,67448335.0,38605943.0,54.4],["Bahrain",9102,2017,73695794.0,66153341.0,10.8],["Bahrain",9102,2018,91281055.0,80515918.0,12.5],["Bahrain",9102,2019,93031203.0,54721834.0,51.9],["Bahrain",9102,2020,66858973.0,44448398.0,40.3],["Bahrain",9102,2021,104125956.0,59174256.0,55.1],["Bahrain",9102,2022,94115092.0,86201031.0,8.8],["Bahrain",9102,2023,98484546.0,103650787.0,-5.1],["Bahrain",9102,2024,70839074.0,78736515.0,-10.6],["Bahrain",9102,2025,71168323.0,null,null],["Kuwait",9101,2014,28050396.0,123414107.0,-125.9],["Kuwait",9101,2015,26571660.0,106529373.0,-120.1],["Kuwait",9101,2016,28322408.0,110847134.0,-118.6],["Kuwait",9101,2017,26738813.0,106153755.0,-119.5],["Kuwait",9101,2018,30230023.0,79284981.0,-89.6],["Kuwait",9101,2019,31634868.0,91153348.0,-96.9],["Kuwait",9101,2020,29506279.0,68764597.0,-79.9],["Kuwait",9101,2021,39919003.0,94335805.0,-81.1],["Kuwait",9101,2022,46972540.0,69717651.0,-39.0],["Kuwait",9101,2023,60394480.0,65682851.0,-8.4],["Kuwait",9101,2024,70363533.0,150302674.0,-72.5],["Kuwait",9101,2025,87170073.0,null,null],["Kuwait",9102,2014,108884817.0,104213933.0,4.4],["Kuwait",9102,2015,104998742.0,105501204.0,-0.5],["Kuwait",9102,2016,115624649.0,116404105.0,-0.7],["Kuwait",9102,2017,111423335.0,105020665.0,5.9],["Kuwait",9102,2018,121488490.0,117404634.0,3.4],["Kuwait",9102,2019,116266678.0,96401987.0,18.7],["Kuwait",9102,2020,97538530.0,101110979.0,-3.6],["Kuwait",9102,2021,123575010.0,150478771.0,-19.6],["Kuwait",9102,2022,125774173.0,175028207.0,-32.7],["Kuwait",9102,2023,137108189.0,196746033.0,-35.7],["Kuwait",9102,2024,142101107.0,119535076.0,17.2],["Kuwait",9102,2025,137804044.0,null,null],["Oman",9101,2014,54784091.0,49562068.0,10.0],["Oman",9101,2015,41665233.0,34422421.0,19.0],["Oman",9101,2016,48191081.0,43256800.0,10.8],["Oman",9101,2017,48559878.0,48078394.0,1.0],["Oman",9101,2018,73549510.0,15774774.0,129.4],["Oman",9101,2019,49310907.0,11932095.0,122.1],["Oman",9101,2020,116991950.0,51323486.0,78.0],["Oman",9101,2021,66671373.0,3603584.0,179.5],["Oman",9101,2022,47697975.0,2011358.0,183.8],["Oman",9101,2023,54999691.0,924257.0,193.4],["Oman",9101,2024,53252728.0,1496081.0,189.1],["Oman",9101,2025,52428318.0,null,null],["Oman",9102,2014,15949883.0,14472727.0,9.7],["Oman",9102,2015,10515234.0,17010207.0,-47.2],["Oman",9102,2016,16645057.0,11641976.0,35.4],["Oman",9102,2017,19621691.0,17773845.0,9.9],["Oman",9102,2018,20288244.0,15589608.0,26.2],["Oman",9102,2019,23161881.0,15801372.0,37.8],["Oman",9102,2020,22791855.0,4778962.0,130.7],["Oman",9102,2021,25635363.0,6015896.0,124.0],["Oman",9102,2022,28391962.0,6640406.0,124.2],["Oman",9102,2023,34981402.0,9298213.0,116.0],["Oman",9102,2024,43724679.0,8099113.0,137.5],["Oman",9102,2025,38301832.0,null,null],["Qatar",9101,2014,77156057.0,126836615.0,-48.7],["Qatar",9101,2015,90823210.0,111166582.0,-20.1],["Qatar",9101,2016,55989460.0,96646466.0,-53.3],["Qatar",9101,2017,59162901.0,112855859.0,-62.4],["Qatar",9101,2018,103457065.0,118759028.0,-13.8],["Qatar",9101,2019,79325196.0,103043946.0,-26.0],["Qatar",9101,2020,69214294.0,82490327.0,-17.5],["Qatar",9101,2021,79498565.0,129146617.0,-47.6],["Qatar",9101,2022,137137463.0,196587559.0,-35.6],["Qatar",9101,2023,125879291.0,181610164.0,-36.2],["Qatar",9101,2024,142641516.0,169961555.0,-17.5],["Qatar",9101,2025,154972183.0,null,null],["Qatar",9102,2014,99037761.0,88425651.0,11.3],["Qatar",9102,2015,83670913.0,106556200.0,-24.1],["Qatar",9102,2016,80519619.0,85218665.0,-5.7],["Qatar",9102,2017,82542677.0,71228530.0,14.7],["Qatar",9102,2018,114760669.0,85939395.0,28.7],["Qatar",9102,2019,115387840.0,113579490.0,1.6],["Qatar",9102,2020,94574592.0,116387584.0,-20.7],["Qatar",9102,2021,120622527.0,136603413.0,-12.4],["Qatar",9102,2022,162560677.0,168192186.0,-3.4],["Qatar",9102,2023,163000927.0,172474357.0,-5.6],["Qatar",9102,2024,165088236.0,206197085.0,-22.1],["Qatar",9102,2025,172704753.0,null,null],["Saudi Arabia",9101,2014,120005249.0,317009896.0,-90.2],["Saudi Arabia",9101,2015,140488473.0,219699869.0,-44.0],["Saudi Arabia",9101,2016,110218485.0,194923977.0,-55.5],["Saudi Arabia",9101,2017,113722798.0,176064233.0,-43.0],["Saudi Arabia",9101,2018,113745269.0,128769204.0,-12.4],["Saudi Arabia",9101,2019,97143672.0,183431465.0,-61.5],["Saudi Arabia",9101,2020,90674382.0,243197057.0,-91.4],["Saudi Arabia",9101,2021,142926958.0,370897535.0,-88.7],["Saudi Arabia",9101,2022,151710356.0,366829140.0,-83.0],["Saudi Arabia",9101,2023,159954675.0,476575411.0,-99.5],["Saudi Arabia",9101,2024,132334133.0,379878521.0,-96.7],["Saudi Arabia",9101,2025,147320941.0,null,null],["Saudi Arabia",9102,2014,302988787.0,155110065.0,64.6],["Saudi Arabia",9102,2015,306600374.0,251771059.0,19.6],["Saudi Arabia",9102,2016,238349788.0,179170891.0,28.3],["Saudi Arabia",9102,2017,212557883.0,168684389.0,23.0],["Saudi Arabia",9102,2018,235058179.0,243600985.0,-3.6],["Saudi Arabia",9102,2019,225064275.0,171236678.0,27.2],["Saudi Arabia",9102,2020,144873834.0,29950607.0,131.5],["Saudi Arabia",9102,2021,201485579.0,18659284.0,166.1],["Saudi Arabia",9102,2022,207170407.0,35084435.0,142.1],["Saudi Arabia",9102,2023,230593411.0,11988625.0,180.2],["Saudi Arabia",9102,2024,226880021.0,22177060.0,164.4],["Saudi Arabia",9102,2025,271758070.0,null,null]],"prem":[["United Arab Emirates","CH_export",2014,0.4497,0.2829,0.7171],["United Arab Emirates","CH_export",2015,0.4378,0.2689,0.7311],["United Arab Emirates","CH_export",2016,0.4101,0.2442,0.7558],["United Arab Emirates","CH_export",2017,0.3939,0.2308,0.7692],["United Arab Emirates","CH_export",2018,0.3787,0.2304,0.7696],["United Arab Emirates","CH_export",2019,0.3718,0.2245,0.7755],["United Arab Emirates","CH_export",2020,0.3974,0.1926,0.8074],["United Arab Emirates","CH_export",2021,0.4197,0.1802,0.8198],["United Arab Emirates","CH_export",2022,0.4297,0.1742,0.8258],["United Arab Emirates","CH_export",2023,0.4392,0.1817,0.8183],["United Arab Emirates","CH_export",2024,0.4423,0.1988,0.8012],["United Arab Emirates","CH_export",2025,0.4725,0.1792,0.8208],["United Arab Emirates","GCC_import",2014,0.7137,null,null],["United Arab Emirates","GCC_import",2015,0.7697,null,null],["United Arab Emirates","GCC_import",2016,0.6909,null,null],["United Arab Emirates","GCC_import",2017,0.6893,null,null],["United Arab Emirates","GCC_import",2018,0.6014,null,null],["United Arab Emirates","GCC_import",2019,0.5584,null,null],["United Arab Emirates","GCC_import",2020,0.5103,null,null],["United Arab Emirates","GCC_import",2021,0.5367,null,null],["United Arab Emirates","GCC_import",2022,0.5184,null,null],["United Arab Emirates","GCC_import",2023,0.5698,null,null],["Bahrain","CH_export",2014,0.2865,0.2162,0.7838],["Bahrain","CH_export",2015,0.2778,0.2293,0.7707],["Bahrain","CH_export",2016,0.2642,0.18,0.82],["Bahrain","CH_export",2017,0.2741,0.1673,0.8327],["Bahrain","CH_export",2018,0.3073,0.2049,0.7951],["Bahrain","CH_export",2019,0.2826,0.2114,0.7886],["Bahrain","CH_export",2020,0.3229,0.1365,0.8635],["Bahrain","CH_export",2021,0.3031,0.1277,0.8723],["Bahrain","CH_export",2022,0.3838,0.1223,0.8777],["Bahrain","CH_export",2023,0.3923,0.1138,0.8862],["Bahrain","CH_export",2024,0.4902,0.1454,0.8546],["Bahrain","CH_export",2025,0.5208,0.1342,0.8658],["Bahrain","GCC_import",2014,0.429,null,null],["Bahrain","GCC_import",2015,0.4748,null,null],["Bahrain","GCC_import",2016,0.5119,null,null],["Bahrain","GCC_import",2017,0.3941,null,null],["Bahrain","GCC_import",2018,0.5089,null,null],["Bahrain","GCC_import",2019,0.3832,null,null],["Bahrain","GCC_import",2020,0.4312,null,null],["Bahrain","GCC_import",2021,0.4431,null,null],["Bahrain","GCC_import",2022,0.3807,null,null],["Bahrain","GCC_import",2023,0.3273,null,null],["Bahrain","GCC_import",2024,0.4199,null,null],["Kuwait","CH_export",2014,0.2048,0.3679,0.6321],["Kuwait","CH_export",2015,0.202,0.3561,0.6439],["Kuwait","CH_export",2016,0.1968,0.3094,0.6906],["Kuwait","CH_export",2017,0.1935,0.2957,0.7043],["Kuwait","CH_export",2018,0.1993,0.2918,0.7082],["Kuwait","CH_export",2019,0.2139,0.3144,0.6856],["Kuwait","CH_export",2020,0.2323,0.3289,0.6711],["Kuwait","CH_export",2021,0.2442,0.3338,0.6662],["Kuwait","CH_export",2022,0.2719,0.2526,0.7474],["Kuwait","CH_export",2023,0.3058,0.25,0.75],["Kuwait","CH_export",2024,0.3312,0.2669,0.7331],["Kuwait","CH_export",2025,0.3875,0.2623,0.7377],["Kuwait","GCC_import",2014,0.5422,null,null],["Kuwait","GCC_import",2015,0.5024,null,null],["Kuwait","GCC_import",2016,0.4878,null,null],["Kuwait","GCC_import",2017,0.5027,null,null],["Kuwait","GCC_import",2018,0.4031,null,null],["Kuwait","GCC_import",2019,0.486,null,null],["Kuwait","GCC_import",2020,0.4048,null,null],["Kuwait","GCC_import",2021,0.3853,null,null],["Kuwait","GCC_import",2022,0.2849,null,null],["Kuwait","GCC_import",2023,0.2503,null,null],["Kuwait","GCC_import",2024,0.557,null,null],["Oman","CH_export",2014,0.7745,0.2514,0.7486],["Oman","CH_export",2015,0.7985,0.2547,0.7453],["Oman","CH_export",2016,0.7433,0.2042,0.7958],["Oman","CH_export",2017,0.7122,0.2531,0.7469],["Oman","CH_export",2018,0.7838,0.2582,0.7418],["Oman","CH_export",2019,0.6804,0.2733,0.7267],["Oman","CH_export",2020,0.8369,0.1681,0.8319],["Oman","CH_export",2021,0.7223,0.226,0.774],["Oman","CH_export",2022,0.6269,0.1983,0.8017],["Oman","CH_export",2023,0.6112,0.2087,0.7913],["Oman","CH_export",2024,0.5491,0.2008,0.7992],["Oman","CH_export",2025,0.5778,0.2169,0.7831],["Oman","GCC_import",2014,0.774,null,null],["Oman","GCC_import",2015,0.6693,null,null],["Oman","GCC_import",2016,0.7879,null,null],["Oman","GCC_import",2017,0.7301,null,null],["Oman","GCC_import",2018,0.503,null,null],["Oman","GCC_import",2019,0.4302,null,null],["Oman","GCC_import",2020,0.9148,null,null],["Oman","GCC_import",2021,0.3746,null,null],["Oman","GCC_import",2022,0.2325,null,null],["Oman","GCC_import",2023,0.0904,null,null],["Oman","GCC_import",2024,0.1559,null,null],["Qatar","CH_export",2014,0.4379,0.1735,0.8265],["Qatar","CH_export",2015,0.5205,0.2132,0.7868],["Qatar","CH_export",2016,0.4102,0.2354,0.7646],["Qatar","CH_export",2017,0.4175,0.217,0.783],["Qatar","CH_export",2018,0.4741,0.2145,0.7855],["Qatar","CH_export",2019,0.4074,0.1951,0.8049],["Qatar","CH_export",2020,0.4226,0.1709,0.8291],["Qatar","CH_export",2021,0.3973,0.1644,0.8356],["Qatar","CH_export",2022,0.4576,0.1948,0.8052],["Qatar","CH_export",2023,0.4357,0.2111,0.7889],["Qatar","CH_export",2024,0.4635,0.1932,0.8068],["Qatar","CH_export",2025,0.4729,0.1602,0.8398],["Qatar","GCC_import",2014,0.5892,null,null],["Qatar","GCC_import",2015,0.5106,null,null],["Qatar","GCC_import",2016,0.5314,null,null],["Qatar","GCC_import",2017,0.6131,null,null],["Qatar","GCC_import",2018,0.5802,null,null],["Qatar","GCC_import",2019,0.4757,null,null],["Qatar","GCC_import",2020,0.4148,null,null],["Qatar","GCC_import",2021,0.486,null,null],["Qatar","GCC_import",2022,0.5389,null,null],["Qatar","GCC_import",2023,0.5129,null,null],["Qatar","GCC_import",2024,0.4518,null,null],["Saudi Arabia","CH_export",2014,0.2837,0.3381,0.6619],["Saudi Arabia","CH_export",2015,0.3142,0.3996,0.6004],["Saudi Arabia","CH_export",2016,0.3162,0.3632,0.6368],["Saudi Arabia","CH_export",2017,0.3485,0.3352,0.6648],["Saudi Arabia","CH_export",2018,0.3261,0.3136,0.6864],["Saudi Arabia","CH_export",2019,0.3015,0.2975,0.7025],["Saudi Arabia","CH_export",2020,0.385,0.2216,0.7784],["Saudi Arabia","CH_export",2021,0.415,0.2173,0.7827],["Saudi Arabia","CH_export",2022,0.4227,0.199,0.801],["Saudi Arabia","CH_export",2023,0.4096,0.1771,0.8229],["Saudi Arabia","CH_export",2024,0.3684,0.1955,0.8045],["Saudi Arabia","CH_export",2025,0.3515,0.2039,0.7961],["Saudi Arabia","GCC_import",2014,0.6715,null,null],["Saudi Arabia","GCC_import",2015,0.466,null,null],["Saudi Arabia","GCC_import",2016,0.5211,null,null],["Saudi Arabia","GCC_import",2017,0.5107,null,null],["Saudi Arabia","GCC_import",2018,0.3458,null,null],["Saudi Arabia","GCC_import",2019,0.5172,null,null],["Saudi Arabia","GCC_import",2020,0.8904,null,null],["Saudi Arabia","GCC_import",2021,0.9521,null,null],["Saudi Arabia","GCC_import",2022,0.9127,null,null],["Saudi Arabia","GCC_import",2023,0.9755,null,null],["Saudi Arabia","GCC_import",2024,0.9448,null,null]],"shareWorld":{"China":[[2000,0.437],[2005,2.838],[2010,6.805],[2015,6.208],[2020,14.087],[2021,13.303],[2022,10.333],[2023,10.348],[2024,7.9],[2025,7.06]],"France":[[2000,6.341],[2005,5.413],[2010,7.232],[2015,5.692],[2020,3.929],[2021,4.277],[2022,4.763],[2023,4.785],[2024,5.047],[2025,5.2]],"Germany":[[2000,6.955],[2005,5.127],[2010,4.754],[2015,5.726],[2020,5.218],[2021,4.759],[2022,5.198],[2023,5.077],[2024,5.024],[2025,4.763]],"Hong Kong":[[2000,13.821],[2005,14.416],[2010,19.704],[2015,14.762],[2020,9.983],[2021,9.565],[2022,7.678],[2023,8.81],[2024,7.367],[2025,7.036]],"Italy":[[2000,8.578],[2005,6.898],[2010,5.713],[2015,6.111],[2020,3.824],[2021,3.854],[2022,3.927],[2023,3.989],[2024,4.038],[2025,4.086]],"Japan":[[2000,9.016],[2005,9.259],[2010,4.992],[2015,6.062],[2020,6.998],[2021,6.354],[2022,6.81],[2023,6.815],[2024,7.561],[2025,7.242]],"Singapore":[[2000,4.103],[2005,3.877],[2010,5.563],[2015,5.252],[2020,5.503],[2021,5.726],[2022,6.497],[2023,6.188],[2024,6.236],[2025,6.388]],"UAE":[[2000,1.753],[2005,2.803],[2010,3.582],[2015,4.416],[2020,4.465],[2021,4.472],[2022,4.532],[2023,4.726],[2024,4.894],[2025,5.15]],"USA":[[2000,17.937],[2005,17.402],[2010,10.371],[2015,10.955],[2020,11.69],[2021,13.813],[2022,15.652],[2023,15.562],[2024,16.822],[2025,17.03]],"United Kingdom":[[2000,4.17],[2005,4.711],[2010,3.691],[2015,5.401],[2020,6.068],[2021,5.982],[2022,6.52],[2023,6.52],[2024,6.603],[2025,6.725]]},"index2015":{"CHF 200-500":[[2000,72.693],[2005,59.043],[2010,73.163],[2015,100.0],[2020,57.386],[2021,62.348],[2022,47.449],[2023,46.389],[2024,41.056],[2025,38.901]],"CHF 500-3,000":[[2000,92.675],[2005,102.992],[2010,92.718],[2015,100.0],[2020,81.923],[2021,99.289],[2022,104.112],[2023,105.516],[2024,86.616],[2025,86.751]],"CHF <200":[[2000,99.547],[2005,86.691],[2010,93.79],[2015,100.0],[2020,43.742],[2021,52.11],[2022,55.215],[2023,62.993],[2024,59.25],[2025,56.929]],"CHF >3,000":[[2000,23.505],[2005,38.902],[2010,67.787],[2015,100.0],[2020,84.763],[2021,115.95],[2022,134.198],[2023,146.829],[2024,148.345],[2025,145.654]],"China":[[2000,3.366],[2005,26.302],[2010,82.294],[2015,100.0],[2020,179.137],[2021,221.94],[2022,192.145],[2023,207.047],[2024,153.613],[2025,134.979]],"France":[[2000,53.268],[2005,54.72],[2010,95.39],[2015,100.0],[2020,54.491],[2021,77.825],[2022,96.598],[2023,104.43],[2024,107.033],[2025,108.436]],"Germany":[[2000,58.086],[2005,51.517],[2010,62.336],[2015,100.0],[2020,71.938],[2021,86.075],[2022,104.801],[2023,110.13],[2024,105.904],[2025,98.735]],"Hong Kong":[[2000,44.769],[2005,56.187],[2010,100.204],[2015,100.0],[2020,53.385],[2021,67.103],[2022,60.044],[2023,74.124],[2024,60.236],[2025,56.571]],"Italy":[[2000,67.125],[2005,64.952],[2010,70.188],[2015,100.0],[2020,49.396],[2021,65.324],[2022,74.185],[2023,81.078],[2024,79.763],[2025,79.368]],"Japan":[[2000,71.115],[2005,87.874],[2010,61.823],[2015,100.0],[2020,91.13],[2021,108.548],[2022,129.682],[2023,139.632],[2024,150.548],[2025,141.777]],"Singapore":[[2000,37.36],[2005,42.479],[2010,79.521],[2015,100.0],[2020,82.722],[2021,112.919],[2022,142.824],[2023,146.352],[2024,143.319],[2025,144.372]],"UAE":[[2000,18.982],[2005,36.523],[2010,60.9],[2015,100.0],[2020,79.819],[2021,104.89],[2022,118.467],[2023,132.937],[2024,133.768],[2025,138.416]],"USA":[[2000,78.293],[2005,91.395],[2010,71.069],[2015,100.0],[2020,84.236],[2021,130.579],[2022,164.936],[2023,176.453],[2024,185.35],[2025,184.503]],"United Kingdom":[[2000,36.922],[2005,50.189],[2010,51.307],[2015,100.0],[2020,88.702],[2021,114.712],[2022,139.364],[2023,149.957],[2024,147.584],[2025,147.799]]},"bandsValue":{"CHF 200-500":[[2000,11.166],[2005,7.368],[2010,6.879],[2015,7.041],[2020,5.067],[2021,4.187],[2022,2.853],[2023,2.589],[2024,2.357],[2025,2.271]],"CHF 500-3,000":[[2000,41.57],[2005,37.534],[2010,25.458],[2015,20.56],[2020,21.122],[2021,19.47],[2022,18.283],[2023,17.199],[2024,14.519],[2025,14.789]],"CHF <200":[[2000,13.272],[2005,9.391],[2010,7.655],[2015,6.111],[2020,3.352],[2021,3.037],[2022,2.882],[2023,3.052],[2024,2.952],[2025,2.885]],"CHF >3,000":[[2000,33.991],[2005,45.708],[2010,60.008],[2015,66.288],[2020,70.459],[2021,73.306],[2022,75.981],[2023,77.16],[2024,80.172],[2025,80.055]]},"fh":{"avg_export_price_chf":[[2000,312.803],[2005,468.63],[2010,579.562],[2015,719.237],[2020,1171.168],[2021,1348.891],[2022,1500.671],[2023,1508.224],[2024,1618.069],[2025,1672.475]],"high_price_units_share":[[2000,0.016],[2005,0.03],[2010,0.044],[2015,0.056],[2020,0.097],[2021,0.114],[2022,0.127],[2023,0.124],[2024,0.131],[2025,0.128]],"high_price_value_share":[[2000,0.34],[2005,0.457],[2010,0.6],[2015,0.663],[2020,0.705],[2021,0.733],[2022,0.76],[2023,0.772],[2024,0.802],[2025,0.801]],"uae_share_world_exports":[[2000,0.018],[2005,0.028],[2010,0.036],[2015,0.044],[2020,0.045],[2021,0.045],[2022,0.045],[2023,0.047],[2024,0.049],[2025,0.051]],"uae_vs_usa_value_ratio":[[2000,0.098],[2005,0.161],[2010,0.345],[2015,0.403],[2020,0.382],[2021,0.324],[2022,0.29],[2023,0.304],[2024,0.291],[2025,0.302]]}};
+</script>
+<script>
+/* ============ palette & shared ============ */
+const C = {
+  ink:'#F2ECE3', muted:'#B9AFA3', faint:'#8E857A',
+  bronze:'#C48B58', bronzeDeep:'#9E6B3C', bronzeSoft:'#D9BE93',
+  line:'rgba(242,236,227,.10)', card:'#4A4540'
+};
+const SERIES = ['#C48B58','#D9BE93','#8FA98B','#7E97AD','#C08079','#A6A06B','#B79CC0','#89B6B0'];
+const GCC = ['United Arab Emirates','Saudi Arabia','Qatar','Kuwait','Bahrain','Oman'];
+const SHORT = {'United Arab Emirates':'UAE','Saudi Arabia':'KSA','Qatar':'Qatar','Kuwait':'Kuwait','Bahrain':'Bahrain','Oman':'Oman'};
+const CCOL = {}; GCC.forEach((c,i)=>CCOL[c]=SERIES[i]);
+
+/* row layouts: annual [country,dir,hs,year,value,qty,uv,yoy,share,hhi]
+   mirror [country,hs,year,chx,gimp,gap%]  prem [country,dir,year,precious,elec,mech] */
+const A={c:0,d:1,h:2,y:3,v:4,q:5,uv:6,yoy:7,sh:8,hhi:9};
+const M={c:0,h:1,y:2,x:3,i:4,g:5};
+const P={c:0,d:1,y:2,pr:3,el:4,me:5};
+
+const state = { dir:'CH_export', hs:'all', countries:[...GCC], y0:2014, y1:2025, measure:'value', view:'overview', moveC:'United Arab Emirates' };
+
+const $ = id => document.getElementById(id);
+const fmtUSD = v => v==null?'—': v>=1e9? '$'+(v/1e9).toFixed(2)+'B' : v>=1e6? '$'+(v/1e6).toFixed(1)+'M' : '$'+Math.round(v/1e3)+'K';
+const fmtPct = (v,d=1) => v==null?'—':(v>0?'+':'')+v.toFixed(d)+'%';
+const yrs = (a,b) => Array.from({length:b-a+1},(_,i)=>a+i);
+
+/* ============ echarts base ============ */
+const charts = {};
+function mk(id){ const el=$(id); if(!el) return null;
+  if(!charts[id]) charts[id]=echarts.init(el,null,{renderer:'canvas'});
+  return charts[id]; }
+const AXIS = {axisLine:{lineStyle:{color:C.line}},axisTick:{show:false},
+  axisLabel:{color:C.faint,fontFamily:'IBM Plex Mono',fontSize:10.5},
+  splitLine:{lineStyle:{color:'rgba(242,236,227,.06)'}}};
+const TT = {trigger:'axis',backgroundColor:'#332F2C',borderColor:'rgba(196,139,88,.35)',borderWidth:1,
+  textStyle:{color:C.ink,fontFamily:'Outfit',fontSize:12},
+  axisPointer:{lineStyle:{color:'rgba(196,139,88,.5)'}}};
+const LEG = {textStyle:{color:C.muted,fontFamily:'Outfit',fontSize:11},itemWidth:14,itemHeight:9,icon:'roundRect',inactiveColor:'#5E574F'};
+function base(o){ return Object.assign({backgroundColor:'transparent',
+  grid:{left:52,right:16,top:38,bottom:28,containLabel:false},
+  tooltip:TT,legend:Object.assign({top:0},LEG),
+  textStyle:{fontFamily:'Outfit'}},o); }
+
+/* ============ filtering helpers ============ */
+function fAnnual(){ return DATA.annual.filter(r =>
+  r[A.d]===state.dir &&
+  (state.hs==='all'||r[A.h]===+state.hs) &&
+  state.countries.includes(r[A.c]) &&
+  r[A.y]>=state.y0 && r[A.y]<=state.y1); }
+
+/* value per country-year, summing HS when 'all' */
+function pivotAnnual(rows, key){ // key: 'v'|'q'
+  const out={}; rows.forEach(r=>{
+    const k=r[A.c]+'|'+r[A.y];
+    out[k]=(out[k]||0)+(r[A[key]]||0); });
+  return out; }
+
+function fMirror(){ return DATA.mirror.filter(r =>
+  (state.hs==='all'||r[M.h]===+state.hs) &&
+  state.countries.includes(r[M.c]) &&
+  r[M.y]>=state.y0 && r[M.y]<=state.y1); }
+
+function mirrorAgg(){ // combine HS when 'all': gap% recomputed from sums
+  const map={};
+  fMirror().forEach(r=>{
+    const k=r[M.c]+'|'+r[M.y];
+    (map[k]=map[k]||{x:0,i:0}); map[k].x+=r[M.x]||0; map[k].i+=r[M.i]||0; });
+  const out={};
+  Object.entries(map).forEach(([k,o])=>{ out[k]= o.x>0? (o.x-o.i)/o.x*100 : null; });
+  return out; }
+
+/* ============ slicer UI ============ */
+function buildChips(){
+  $('chips').innerHTML = GCC.map(c=>
+    `<button class="chip ${state.countries.includes(c)?'on':''}" data-c="${c}">${SHORT[c]}</button>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    const c=b.dataset.c;
+    if(state.countries.includes(c)){ if(state.countries.length>1) state.countries=state.countries.filter(x=>x!==c); }
+    else state.countries.push(c);
+    buildChips(); render(); });
+}
+function wireSeg(id,key,cb){
+  $(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); state[key]=b.dataset.val; (cb||render)(); });
+}
+function syncRange(){
+  const lo=$('rLo'),hi=$('rHi');
+  let a=+lo.value,b=+hi.value; if(a>b){[a,b]=[b,a];}
+  state.y0=a; state.y1=b;
+  $('yLo').textContent=a; $('yHi').textContent=b;
+  const min=+lo.min,max=+lo.max,W=100/(max-min);
+  $('rFill').style.left=((a-min)*W)+'%';
+  $('rFill').style.right=(100-(b-min)*W)+'%';
+}
+
+/* ============ KPIs ============ */
+function renderKPIs(){
+  const rows=fAnnual();
+  const yLast=Math.max(...rows.map(r=>r[A.y]),state.y0);
+  const byY=y=>rows.filter(r=>r[A.y]===y).reduce((s,r)=>s+(r[A.v]||0),0);
+  const tot=byY(yLast), prev=byY(yLast-1);
+  const yoy= prev>0? (tot-prev)/prev*100 : null;
+
+  // top market share of filtered total
+  const cv={}; rows.filter(r=>r[A.y]===yLast).forEach(r=>cv[r[A.c]]=(cv[r[A.c]]||0)+(r[A.v]||0));
+  const top=Object.entries(cv).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+  const topShare= tot>0? top[1]/tot*100 : null;
+
+  // HHI recomputed on filtered set
+  const hhi= tot>0? Object.values(cv).reduce((s,v)=>s+Math.pow(v/tot*100,2),0) : null;
+
+  // median mirror gap latest year
+  const mg=mirrorAgg();
+  const gaps=Object.entries(mg).filter(([k])=>k.endsWith('|'+yLast)).map(([,v])=>v).filter(v=>v!=null).sort((a,b)=>a-b);
+  const medGap= gaps.length? gaps[Math.floor(gaps.length/2)] : null;
+
+  // FH premium tile (global)
+  const hp=DATA.fh.high_price_value_share||[];
+  const hpLast=hp.filter(p=>p[0]<=state.y1).slice(-1)[0];
+
+  const kpi=(lab,val,sub,cls='')=>`<div class="kpi"><div class="k-lab">${lab}</div><div class="k-val">${val}</div><div class="k-sub ${cls}">${sub}</div></div>`;
+  $('kpis').innerHTML =
+    kpi(`${state.dir==='CH_export'?'CH exports':'GCC imports'} · ${yLast}`, fmtUSD(tot),
+        yoy==null?'—':`<span class="${yoy>=0?'up':'dn'}">${yoy>=0?'▲':'▼'} ${fmtPct(Math.abs(yoy)).replace('+','')}</span> vs ${yLast-1}`)+
+    kpi('Top market', SHORT[top[0]]||top[0], topShare==null?'—':topShare.toFixed(1)+'% of filtered total')+
+    kpi('Concentration · HHI', hhi==null?'—':Math.round(hhi).toLocaleString(), hhi>2500?'highly concentrated':hhi>1500?'moderately concentrated':'unconcentrated')+
+    kpi('Median mirror gap · '+yLast, medGap==null?'—':fmtPct(medGap), 'GCC vs Swiss-reported', medGap<0?'dn':'up')+
+    kpi('&gt;CHF 3,000 value share', hpLast? (hpLast[1]*100).toFixed(1)+'%':'—', (hpLast?hpLast[0]:'')+' · world · FH');
+}
+
+/* ============ overview charts ============ */
+function renderTrend(){
+  const ch=mk('chTrend'); if(!ch)return;
+  const rows=fAnnual(), Y=yrs(state.y0,state.y1);
+  const cs=GCC.filter(c=>state.countries.includes(c));
+  let series, yFmt, title, stacked=false;
+  if(state.measure==='value'){
+    const pv=pivotAnnual(rows,'v'); stacked=true; title='Trade value by market';
+    series=cs.map(c=>({name:SHORT[c],type:'bar',stack:'t',barMaxWidth:26,
+      itemStyle:{color:CCOL[c],borderRadius:0},
+      data:Y.map(y=>pv[c+'|'+y]!=null?+(pv[c+'|'+y]/1e6).toFixed(1):null)}));
+    yFmt=v=>'$'+v+'M';
+  }else if(state.measure==='yoy'){
+    title='Year-on-year change';
+    // yoy meaningful per HS; when 'all', recompute from summed values
+    const pv=pivotAnnual(rows,'v');
+    series=cs.map(c=>({name:SHORT[c],type:'line',smooth:.25,symbol:'circle',symbolSize:5,
+      lineStyle:{width:2,color:CCOL[c]},itemStyle:{color:CCOL[c]},
+      data:Y.map(y=>{const a=pv[c+'|'+y],b=pv[c+'|'+(y-1)];return (a!=null&&b>0)?+((a-b)/b*100).toFixed(1):null;})}));
+    yFmt=v=>v+'%';
+  }else{
+    title='Unit value ($ per watch)';
+    const val=pivotAnnual(rows,'v'), qty=pivotAnnual(rows,'q');
+    series=cs.map(c=>({name:SHORT[c],type:'line',smooth:.25,symbol:'circle',symbolSize:5,
+      lineStyle:{width:2,color:CCOL[c]},itemStyle:{color:CCOL[c]},
+      data:Y.map(y=>{const v=val[c+'|'+y],q=qty[c+'|'+y];return (v&&q)?Math.round(v/q):null;})}));
+    yFmt=v=>'$'+(v>=1000?(v/1000)+'k':v);
+  }
+  $('trendTitle').textContent=title;
+  $('trendSub').textContent=`${state.dir==='CH_export'?'Swiss-reported exports':'GCC-reported imports'} · HS ${state.hs==='all'?'9101+9102':state.hs}`;
+  ch.setOption(base({
+    xAxis:Object.assign({type:'category',data:Y},AXIS),
+    yAxis:Object.assign({type:'value'},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:yFmt})}),
+    series
+  }),true);
+}
+
+function renderDonut(){
+  const ch=mk('chDonut'); if(!ch)return;
+  const rows=fAnnual(); const yLast=Math.max(...rows.map(r=>r[A.y]),state.y0);
+  $('donutSub').textContent=yLast;
+  const cv={}; rows.filter(r=>r[A.y]===yLast).forEach(r=>cv[r[A.c]]=(cv[r[A.c]]||0)+(r[A.v]||0));
+  const data=GCC.filter(c=>cv[c]).map(c=>({name:SHORT[c],value:+(cv[c]/1e6).toFixed(1),itemStyle:{color:CCOL[c]}}));
+  ch.setOption({backgroundColor:'transparent',
+    tooltip:{trigger:'item',backgroundColor:'#332F2C',borderColor:'rgba(196,139,88,.35)',textStyle:{color:C.ink,fontSize:12},
+      formatter:p=>`${p.name}<br/><b>$${p.value}M</b> · ${p.percent}%`},
+    series:[{type:'pie',radius:['52%','76%'],center:['50%','52%'],
+      label:{color:C.muted,fontFamily:'Outfit',fontSize:11,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:C.line}},
+      itemStyle:{borderColor:C.card,borderWidth:2},data}]},true);
+}
+
+function renderHHI(){
+  const ch=mk('chHHI'); if(!ch)return;
+  const rows=fAnnual(),Y=yrs(state.y0,state.y1);
+  const pv=pivotAnnual(rows,'v');
+  const hhi=Y.map(y=>{
+    const vals=GCC.map(c=>pv[c+'|'+y]||0), tot=vals.reduce((a,b)=>a+b,0);
+    return tot>0? Math.round(vals.reduce((s,v)=>s+Math.pow(v/tot*100,2),0)) : null;});
+  ch.setOption(base({
+    grid:{left:52,right:14,top:12,bottom:24},legend:{show:false},
+    xAxis:Object.assign({type:'category',data:Y},AXIS),
+    yAxis:Object.assign({type:'value',min:0,max:10000},AXIS),
+    series:[{type:'line',smooth:.3,symbol:'none',data:hhi,
+      lineStyle:{width:2,color:C.bronze},
+      areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(196,139,88,.28)'},{offset:1,color:'rgba(196,139,88,0)'}]}},
+      markLine:{silent:true,symbol:'none',label:{color:C.faint,fontSize:9,fontFamily:'IBM Plex Mono'},
+        lineStyle:{color:'rgba(242,236,227,.25)',type:'dashed'},
+        data:[{yAxis:2500,label:{formatter:'2500 · concentrated'}}]}}]
+  }),true);
+}
+
+/* ============ markets ============ */
+let playTimer=null;
+function leagueYears(){ return (DATA.shareWorld['UAE']||[]).map(p=>p[0]); }
+function renderLeague(){
+  const ch=mk('chLeague'); if(!ch)return;
+  const yrsL=leagueYears();
+  const yr=yrsL[+$('leagueYr').value]; $('leagueYrLbl').textContent=yr;
+  const rows=Object.entries(DATA.shareWorld).map(([m,pts])=>{
+    const p=pts.find(x=>x[0]===yr); return [m,p?p[1]:null];})
+    .filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1]);
+  ch.setOption({backgroundColor:'transparent',
+    grid:{left:96,right:56,top:8,bottom:24},
+    tooltip:Object.assign({},TT,{trigger:'item',formatter:p=>`${p.name} · ${yr}<br/><b>${p.value}%</b> of world exports`}),
+    xAxis:Object.assign({type:'value'},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:'{value}%'})}),
+    yAxis:Object.assign({type:'category',data:rows.map(r=>r[0])},AXIS,{axisLabel:{color:C.muted,fontFamily:'Outfit',fontSize:11.5},splitLine:{show:false}}),
+    series:[{type:'bar',barMaxWidth:18,
+      data:rows.map(r=>({value:r[1],name:r[0],
+        itemStyle:{color:r[0]==='UAE'?C.bronze:'#6B645C',borderRadius:[0,4,4,0]}})),
+      label:{show:true,position:'right',color:C.bronzeSoft,fontFamily:'IBM Plex Mono',fontSize:10.5,formatter:p=>p.value.toFixed(1)+'%'},
+      animationDurationUpdate:600,animationEasingUpdate:'cubicOut'}]},false);
+}
+function wireLeague(){
+  const yrsL=leagueYears(); const inp=$('leagueYr');
+  inp.min=0; inp.max=yrsL.length-1; inp.step=1;
+  inp.value=yrsL.length-1; $('leagueYrLbl').textContent=yrsL[yrsL.length-1];
+  inp.oninput=()=>renderLeague();
+  $('playBtn').onclick=()=>{
+    if(playTimer){clearInterval(playTimer);playTimer=null;$('playBtn').textContent='▶ Play';return;}
+    $('playBtn').textContent='⏸ Pause';
+    let idx=0; inp.value=0; renderLeague();
+    playTimer=setInterval(()=>{
+      idx++; if(idx>=yrsL.length){clearInterval(playTimer);playTimer=null;$('playBtn').textContent='▶ Play';return;}
+      inp.value=idx; renderLeague();
+    },900);
+  };
+}
+function renderIndex(){
+  const ch=mk('chIndex'); if(!ch)return;
+  const markets=['UAE','USA','China','Hong Kong','Singapore','United Kingdom','Japan'];
+  const series=markets.filter(m=>DATA.index2015[m]).map((m,i)=>({
+    name:m,type:'line',smooth:.25,symbol:'none',
+    lineStyle:{width:m==='UAE'?3:1.6,color:m==='UAE'?C.bronze:SERIES[(i+1)%SERIES.length],opacity:m==='UAE'?1:.75},
+    itemStyle:{color:m==='UAE'?C.bronze:SERIES[(i+1)%SERIES.length]},
+    data:DATA.index2015[m].map(p=>p)}));
+  ch.setOption(base({
+    xAxis:Object.assign({type:'value',min:2000,max:2025},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:v=>v})}),
+    yAxis:Object.assign({type:'value'},AXIS),
+    series
+  }),true);
+}
+function renderRatio(){
+  const ch=mk('chRatio'); if(!ch)return;
+  const r=DATA.fh.uae_vs_usa_value_ratio||[];
+  ch.setOption(base({
+    legend:{show:false},
+    xAxis:Object.assign({type:'value',min:2000,max:2025},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:v=>v})}),
+    yAxis:Object.assign({type:'value'},AXIS),
+    series:[{type:'line',smooth:.3,symbol:'circle',symbolSize:6,data:r,
+      lineStyle:{width:2.5,color:C.bronze},itemStyle:{color:C.bronzeSoft},
+      areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(196,139,88,.22)'},{offset:1,color:'rgba(196,139,88,0)'}]}},
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'rgba(242,236,227,.3)',type:'dashed'},
+        label:{color:C.faint,fontSize:9,fontFamily:'IBM Plex Mono',formatter:'parity'},data:[{yAxis:1}]}}]
+  }),true);
+}
+
+/* ============ mirror ============ */
+function renderHeat(){
+  const ch=mk('chHeat'); if(!ch)return;
+  const mg=mirrorAgg(), Y=yrs(state.y0,Math.min(state.y1,2025));
+  const cs=GCC.filter(c=>state.countries.includes(c));
+  const data=[]; cs.forEach((c,ci)=>Y.forEach((y,yi)=>{
+    const v=mg[c+'|'+y]; if(v!=null) data.push([yi,ci,+v.toFixed(1)]);}));
+  $('heatSub').textContent=`country × year · % of Swiss-reported exports · HS ${state.hs==='all'?'9101+9102':state.hs}`;
+  ch.setOption({backgroundColor:'transparent',
+    grid:{left:64,right:16,top:10,bottom:56},
+    tooltip:{backgroundColor:'#332F2C',borderColor:'rgba(196,139,88,.35)',textStyle:{color:C.ink,fontSize:12},
+      formatter:p=>`${SHORT[cs[p.value[1]]]} · ${Y[p.value[0]]}<br/><b>${fmtPct(p.value[2])}</b>`},
+    xAxis:Object.assign({type:'category',data:Y},AXIS,{splitLine:{show:false}}),
+    yAxis:Object.assign({type:'category',data:cs.map(c=>SHORT[c])},AXIS,{axisLabel:{color:C.muted,fontFamily:'Outfit',fontSize:11.5},splitLine:{show:false}}),
+    visualMap:{min:-100,max:100,calculable:false,orient:'horizontal',left:'center',bottom:0,
+      itemWidth:10,itemHeight:110,textStyle:{color:C.faint,fontFamily:'IBM Plex Mono',fontSize:10},
+      inRange:{color:['#C08079','#4A4540','#8FA98B']}},
+    series:[{type:'heatmap',data,
+      itemStyle:{borderColor:C.card,borderWidth:2,borderRadius:3},
+      label:{show:true,color:C.ink,fontSize:9.5,fontFamily:'IBM Plex Mono',formatter:p=>Math.round(p.value[2])},
+      emphasis:{itemStyle:{shadowBlur:6,shadowColor:'rgba(0,0,0,.4)'}}}]},true);
+}
+function renderMirrorLine(){
+  const ch=mk('chMirrorLine'); if(!ch)return;
+  const mg=mirrorAgg(), Y=yrs(state.y0,state.y1);
+  const cs=GCC.filter(c=>state.countries.includes(c));
+  const series=cs.map(c=>({name:SHORT[c],type:'line',smooth:.25,symbol:'circle',symbolSize:4,
+    lineStyle:{width:2,color:CCOL[c]},itemStyle:{color:CCOL[c]},connectNulls:true,
+    data:Y.map(y=>{const v=mg[c+'|'+y];return v!=null?+v.toFixed(1):null;})}));
+  ch.setOption(base({
+    xAxis:Object.assign({type:'category',data:Y},AXIS),
+    yAxis:Object.assign({type:'value'},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:'{value}%'})}),
+    series:series.concat([{name:'zero',type:'line',showSymbol:false,silent:true,tooltip:{show:false},
+      lineStyle:{color:'rgba(242,236,227,.3)',type:'dashed',width:1},data:Y.map(()=>0)}])
+  }),true);
+}
+
+/* ============ premiumisation ============ */
+function renderPrecious(){
+  const ch=mk('chPrecious'); if(!ch)return;
+  const Y=yrs(state.y0,state.y1);
+  const cs=GCC.filter(c=>state.countries.includes(c));
+  const series=cs.map(c=>({name:SHORT[c],type:'line',smooth:.25,symbol:'circle',symbolSize:4,connectNulls:true,
+    lineStyle:{width:2,color:CCOL[c]},itemStyle:{color:CCOL[c]},
+    data:Y.map(y=>{
+      const r=DATA.prem.find(r=>r[P.c]===c&&r[P.d]===state.dir&&r[P.y]===y);
+      return r&&r[P.pr]!=null? +(r[P.pr]*100).toFixed(1):null;})}));
+  ch.setOption(base({
+    xAxis:Object.assign({type:'category',data:Y},AXIS),
+    yAxis:Object.assign({type:'value',max:100},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:'{value}%'})}),
+    series
+  }),true);
+}
+function renderBands(){
+  const ch=mk('chBands'); if(!ch)return;
+  const bands=['CHF >3,000','CHF 500-3,000','CHF 200-500','CHF <200'];
+  const cols=['#C48B58','#D9BE93','#8FA98B','#6B645C'];
+  const X=(DATA.bandsValue[bands[0]]||[]).map(p=>p[0]);
+  const series=bands.map((b,i)=>({name:b,type:'line',stack:'v',smooth:.2,symbol:'none',
+    lineStyle:{width:0},areaStyle:{color:cols[i],opacity:.85},itemStyle:{color:cols[i]},
+    data:(DATA.bandsValue[b]||[]).map(p=>p[1])}));
+  ch.setOption(base({
+    tooltip:Object.assign({},TT,{valueFormatter:v=>v.toFixed(1)+'%'}),
+    xAxis:Object.assign({type:'category',data:X},AXIS),
+    yAxis:Object.assign({type:'value',max:100},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:'{value}%'})}),
+    series
+  }),true);
+}
+function buildMoveSeg(){
+  const seg=$('segMoveC');
+  seg.innerHTML=GCC.map(c=>`<button data-val="${c}" class="${c===state.moveC?'on':''}">${SHORT[c]}</button>`).join('');
+  seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    state.moveC=b.dataset.val; buildMoveSeg(); renderMove(); });
+}
+function renderMove(){
+  const ch=mk('chMove'); if(!ch)return;
+  const Y=yrs(Math.max(state.y0,2014),state.y1);
+  const get=(y,k)=>{const r=DATA.prem.find(r=>r[P.c]===state.moveC&&r[P.d]===state.dir&&r[P.y]===y);
+    return r&&r[k]!=null? +(r[k]*100).toFixed(1):null;};
+  ch.setOption(base({
+    tooltip:Object.assign({},TT,{valueFormatter:v=>v==null?'—':v.toFixed(1)+'%'}),
+    xAxis:Object.assign({type:'category',data:Y},AXIS),
+    yAxis:Object.assign({type:'value',max:100},AXIS,{axisLabel:Object.assign({},AXIS.axisLabel,{formatter:'{value}%'})}),
+    series:[
+      {name:'Electrically operated (observed)',type:'bar',stack:'m',barMaxWidth:30,itemStyle:{color:'#7E97AD'},data:Y.map(y=>get(y,P.el))},
+      {name:'Mechanical proxy (residual, upper bound)',type:'bar',stack:'m',barMaxWidth:30,itemStyle:{color:C.bronze,borderRadius:[3,3,0,0]},data:Y.map(y=>get(y,P.me))}
+    ]
+  }),true);
+}
+
+/* ============ data table + csv ============ */
+function renderTable(){
+  const rows=fAnnual().sort((a,b)=>b[A.y]-a[A.y]||a[A.c].localeCompare(b[A.c])||a[A.h]-b[A.h]);
+  $('tCount').textContent=rows.length+' rows · '+(state.dir==='CH_export'?'Swiss-reported':'GCC-reported');
+  const head='<tr><th>Market</th><th>HS</th><th>Year</th><th>Value USD</th><th>Units</th><th>$/watch</th><th>YoY %</th><th>GCC share %</th></tr>';
+  const body=rows.map(r=>`<tr><td>${SHORT[r[A.c]]}</td><td>${r[A.h]}</td><td>${r[A.y]}</td><td>${r[A.v]==null?'—':Math.round(r[A.v]).toLocaleString()}</td><td>${r[A.q]==null?'—':Math.round(r[A.q]).toLocaleString()}</td><td>${r[A.uv]==null?'—':Math.round(r[A.uv]).toLocaleString()}</td><td>${r[A.yoy]==null?'—':r[A.yoy].toFixed(1)}</td><td>${r[A.sh]==null?'—':r[A.sh].toFixed(1)}</td></tr>`).join('');
+  $('tbl').innerHTML=head+body;
+}
+function downloadCSV(){
+  const rows=fAnnual();
+  const head='country,direction,hs,year,value_usd,qty,unit_value_usd,yoy_value_pct,gcc_share_pct';
+  const csv=[head].concat(rows.map(r=>[r[A.c],r[A.d],r[A.h],r[A.y],r[A.v],r[A.q],r[A.uv],r[A.yoy],r[A.sh]].map(v=>v==null?'':v).join(','))).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`swiss_watch_gcc_${state.dir}_${state.hs}_${state.y0}-${state.y1}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ============ render orchestration ============ */
+function render(){
+  renderKPIs(); renderTrend(); renderDonut(); renderHHI();
+  renderHeat(); renderMirrorLine();
+  renderPrecious(); renderMove();
+  renderTable();
+}
+function renderStatic(){ renderLeague(); renderIndex(); renderRatio(); renderBands(); }
+
+function showView(v){
+  state.view=v;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  requestAnimationFrame(()=>Object.values(charts).forEach(c=>c.resize()));
+}
+
+/* ============ init ============ */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>showView(t.dataset.v));
+buildChips(); buildMoveSeg();
+wireSeg('segDir','dir'); wireSeg('segHS','hs'); wireSeg('segMeasure','measure',renderTrend);
+['rLo','rHi'].forEach(id=>$(id).addEventListener('input',()=>{syncRange();render();}));
+$('btnReset').onclick=()=>{
+  state.dir='CH_export';state.hs='all';state.countries=[...GCC];state.measure='value';
+  $('rLo').value=2014;$('rHi').value=2025;syncRange();
+  ['segDir','segHS','segMeasure'].forEach(id=>{
+    $(id).querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===0));});
+  buildChips(); render();
+};
+$('btnCSV').onclick=downloadCSV;
+syncRange(); wireLeague();
+render(); renderStatic();
+window.addEventListener('resize',()=>Object.values(charts).forEach(c=>c.resize()));
+
+</script>
+</body>
+</html>
